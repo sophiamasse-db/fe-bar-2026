@@ -10,6 +10,10 @@ resources:
           spec:
             environment_version: "4"
             dependencies: ["mlflow[databricks]>=3.1", "scikit-learn>=1.4"]
+        - environment_key: ops
+          spec:
+            environment_version: "4"
+            dependencies: ["psycopg[binary]>=3.2", "databricks-sdk>=0.70"]
       tasks:
         - task_key: refresh_pipeline
           pipeline_task: {pipeline_id: "${resources.pipelines.nextdaq_pipeline.id}"}
@@ -44,3 +48,12 @@ resources:
           sql_task:
             warehouse_id: ${var.warehouse_id}
             file: {path: ../src/governance/governance.sql}
+
+        - task_key: sync_lakebase
+          depends_on: [{task_key: governance}]
+          environment_key: ops
+          max_retries: 1
+          spark_python_task:
+            python_file: ${var.code_root}/serve/sync_lakebase.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}",
+                         "--endpoint", "projects/${var.lakebase_project}/branches/production/endpoints/primary"]
