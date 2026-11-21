@@ -1,0 +1,37 @@
+bundle:
+  name: nextdaq-rebalance
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog
+    default: fe_bar_2026_kelemen_catalog
+  schema:
+    description: Schema for every NextDAQ table, volume and model
+    default: nextdaq_index
+  warehouse_id:
+    description: Serverless SQL warehouse
+    default: 0b1ef599493d9600
+  llm_endpoint:
+    description: Foundation model that drafts summaries and notices
+    default: databricks-claude-sonnet-5-5
+  judge_endpoint:
+    description: Judge model, from a different family than the generator
+    default: databricks-gpt-5-5
+  lakebase_project:
+    description: Lakebase (autoscaling Postgres) project id
+    default: nextdaq-ops
+  code_root:
+    description: Job source code location (UC volume), synced by tools/deploy.sh
+    default: dbfs:/Volumes/${var.catalog}/${var.schema}/code/src
+  landing_root:
+    description: Landing volume path
+    default: /Volumes/${var.catalog}/${var.schema}/landing
+
+targets:
+  dev:
+    default: true
+    workspace:
+      host: https://fevm-fe-bar-2026-kelemen.cloud.databricks.com
