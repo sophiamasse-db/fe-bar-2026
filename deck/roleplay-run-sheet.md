@@ -101,3 +101,25 @@ Pre-set: app open on Overview, signed in as Head of Methodology, scenarios A/B n
 | Compare & Approve | Live | Recording; describe the audit trail from slide 4 |
 | Ask Genie | Live (pre-asked) | Show the pre-asked answer |
 | Persona view | Recording (needs an entitlement switch) | Describe it; point at slide 4's "0 of 1,015" |
+
+## Practice Q&A (2026-11-21 drill: stronger answers to rehearse)
+
+**B1. "We already pay for a vendor calculation engine. Why a second system right before December?"**
+"Completely fair, and it doesn't replace your calculation engine; that stays the official system. This sits in front of it, for the what-if work your team does in spreadsheets today. So there's no risk to December: we run it in shadow alongside your current process for six weeks with two of your analysts, measured on your own KPIs: time per scenario from two or three days to minutes, scenarios per cycle from three or four to twenty or more. Can we start that pilot so it shadows the 21st of December?"
+
+**T1. "How do you handle a corrected vendor file, and how do I know the weights are still right?"**
+"Auto Loader tracks every file, so a corrected file is picked up exactly once. Today the pipeline keeps the first version of a ticker-day; for your feed we'd switch to latest-wins with the pipeline's change-data-capture, keyed on ticker and trade date. Every file is reconciled against the vendor's control totals (it caught a file three rows short), gold recomputes from silver, every forecast change is in the Lakebase history, and lineage shows which source fed each number."
+
+**B2. "Where does the ~$0.75M come from, and what does it cost to run?"**
+"Value comes from three things your team told us: analyst time (~$200k), fewer corrections ($250-500k), faster custom indexes (~$300k pulled forward); every assumption is on the slide and I'd rather use your numbers. Cost: it runs serverless, about five minutes per cycle, and the database scales to zero. In the pilot we measure actual spend from Databricks' billing tables and show your CFO cost next to value."
+
+**T2. "An LLM writes about unannounced changes. Where does it go, who sees it, what stops a leak?"**
+"The facts go to a Databricks-hosted model endpoint in your workspace; the draft is stored in a table only MNPI-cleared people can read. The app and Genie run as the signed-in user, so client services sees the forecast masked and zero briefs; we tested that as a separate non-admin identity: 0 of 1,015 visible. The operational database is protected by the app today; for production I'd add Postgres row-level security. The client notice is never AI-written."
+
+**B3. "My team is stretched. What if they just keep their spreadsheets?"**
+"Nobody gives up their spreadsheets in the pilot. Two of your analysts run the same December scenarios in the app alongside them, and the sliders are your own rules, so there's no SQL to learn. The payoff is time: two or three days per scenario become minutes when they need it most. We'll make adoption a success measure, and they'll help shape the screens. Could you nominate the two analysts this week?"
+
+**T3. "Lots of moving parts. Who runs it, how do you deploy, and what happens at 6 a.m. with a late file?"**
+"One job runs the whole cycle, deployed from one versioned bundle in git, so a change is a reviewed commit. One data engineer owns the job; your team only uses the app. A late file: the job starts only when the vendor's control file lands, the reconciliation shows it missing, and the app keeps yesterday's validated numbers; when it arrives, a rerun is safe (we proved it changes nothing). For the pilot I'd add on-call alerts and a CI check before every deploy."
+
+**Habits:** answer first; use the measured numbers (0 of 1,015 · 54 rows · 1 break · under 30 ms · 14/14 · rerun changed nothing); never claim more than the build shows ("configured, validated in the pilot").
