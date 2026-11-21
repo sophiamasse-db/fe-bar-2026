@@ -1,0 +1,46 @@
+resources:
+  jobs:
+    nextdaq_rebalance_cycle:
+      name: nextdaq_rebalance_cycle
+      description: "One cycle: ingest (Lakeflow) -> forecast (ML) -> scenario briefs (GenAI) -> evaluate -> govern -> serve (Lakebase)"
+      max_concurrent_runs: 1
+      queue: {enabled: true}
+      environments:
+        - environment_key: ml
+          spec:
+            environment_version: "4"
+            dependencies: ["mlflow[databricks]>=3.1", "scikit-learn>=1.4"]
+      tasks:
+        - task_key: refresh_pipeline
+          pipeline_task: {pipeline_id: "${resources.pipelines.nextdaq_pipeline.id}"}
+
+        - task_key: train_and_score
+          depends_on: [{task_key: refresh_pipeline}]
+          environment_key: ml
+          max_retries: 1
+          spark_python_task:
+            python_file: ${var.code_root}/ai/train_score.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}"]
+
+        - task_key: ai_briefs
+          depends_on: [{task_key: refresh_pipeline}]
+          environment_key: ml
+          max_retries: 1
+          spark_python_task:
+            python_file: ${var.code_root}/ai/briefs.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}", "--endpoint", "${var.llm_endpoint}",
+                         "--code-root", "${var.code_root}"]
+
+        - task_key: evaluate_ai
+          depends_on: [{task_key: ai_briefs}]
+          environment_key: ml
+          max_retries: 1
+          spark_python_task:
+            python_file: ${var.code_root}/ai/evaluate.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}", "--judge-endpoint", "${var.judge_endpoint}"]
+
+        - task_key: governance
+          depends_on: [{task_key: train_and_score}, {task_key: evaluate_ai}]
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file: {path: ../src/governance/governance.sql}

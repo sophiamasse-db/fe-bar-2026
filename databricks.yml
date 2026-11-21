@@ -16,7 +16,7 @@ variables:
     default: 0b1ef599493d9600
   llm_endpoint:
     description: Foundation model that drafts summaries and notices
-    default: databricks-claude-sonnet-5-5
+    default: databricks-claude-sonnet-4-6
   judge_endpoint:
     description: Judge model, from a different family than the generator
     default: databricks-gpt-5-5
@@ -26,6 +26,9 @@ variables:
   code_root:
     description: Job source code location (UC volume), synced by tools/deploy.sh
     default: dbfs:/Volumes/${var.catalog}/${var.schema}/code/src
+  tester_sp:
+    description: Application id of the non-admin access-test service principal (Client Services persona)
+    default: ecdea4a2-ebe7-45a1-ae4e-e00598744b5c
   landing_root:
     description: Landing volume path
     default: /Volumes/${var.catalog}/${var.schema}/landing

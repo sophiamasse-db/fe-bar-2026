@@ -1,0 +1,16 @@
+resources:
+  jobs:
+    nextdaq_access_test:
+      name: nextdaq_access_test
+      description: Non-admin access check, runs AS the Client Services service principal (tools/access_test.sh grants, runs, revokes)
+      run_as:
+        service_principal_name: ${var.tester_sp}
+      environments:
+        - environment_key: default
+          spec: {environment_version: "4"}
+      tasks:
+        - task_key: access_test
+          environment_key: default
+          spark_python_task:
+            python_file: ${var.code_root}/governance/access_test.py
+            parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}"]

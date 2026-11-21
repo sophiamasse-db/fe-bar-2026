@@ -11,6 +11,7 @@ echo "$R" | python3 -c '
 import sys,json
 r=json.load(sys.stdin); st=r["status"]
 if st["state"]!="SUCCEEDED": print("ERROR:", st.get("error",{}).get("message","")[:800]); sys.exit(1)
-cols=[c["name"] for c in r["manifest"]["schema"]["columns"]]; rows=r.get("result",{}).get("data_array",[]) or []
+cols=[c["name"] for c in r.get("manifest",{}).get("schema",{}).get("columns",[])]; rows=r.get("result",{}).get("data_array",[]) or []
+if not cols: print("OK"); sys.exit(0)
 print("| "+" | ".join(cols)+" |"); print("|"+"---|"*len(cols))
 for row in rows: print("| "+" | ".join("" if v is None else str(v) for v in row)+" |")'

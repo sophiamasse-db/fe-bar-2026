@@ -8,6 +8,6 @@ cd "$(dirname "$0")/.."
 databricks bundle deploy -p "$PROFILE"
 for d in data app ai serve governance; do
   [ -d "src/$d" ] || continue
-  databricks fs cp -r --overwrite "src/$d" "dbfs:$CODE_VOL/src/$d" -p "$PROFILE" >/dev/null
+  databricks fs cp -r --overwrite "src/$d" "dbfs:$CODE_VOL/src/$d" -p "$PROFILE" | tail -n 0
 done
 echo "Synced src/ to $CODE_VOL/src"
