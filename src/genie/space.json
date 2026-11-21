@@ -1,0 +1,542 @@
+{
+ "version": 2,
+ "config": {
+  "sample_questions": [
+   {
+    "id": "6f408c0e2e7d4b008ca9a302ebaf6031",
+    "question": [
+     "Which Technology stocks are within 10 ranks of the cutoff on the latest snapshot?"
+    ]
+   },
+   {
+    "id": "8f85987b8ee6445b8f32ee6ff88fc5e0",
+    "question": [
+     "Which predicted removals have the highest ETF trading impact?"
+    ]
+   },
+   {
+    "id": "a9a3d8f1dce64694b66d5aed56849cbd",
+    "question": [
+     "How many additions and removals were there in each of the last 3 annual reconstitutions?"
+    ]
+   },
+   {
+    "id": "b4cba4f6831d400d89d380e44307a049",
+    "question": [
+     "Which non-members rank inside the top 90 on the latest snapshot?"
+    ]
+   },
+   {
+    "id": "f2bef1c5ffe74e1eb513e5a631372432",
+    "question": [
+     "Which securities rank within 5 places of the cutoff (ranks 95 to 105) on the latest snapshot?"
+    ]
+   },
+   {
+    "id": "f3260afff4924c448597d555c7967cde",
+    "question": [
+     "Which current index members rank worse than 110 on the latest snapshot?"
+    ]
+   }
+  ]
+ },
+ "data_sources": {
+  "tables": [
+   {
+    "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_etf_exposure",
+    "column_configs": [
+     {
+      "column_name": "as_of_date",
+      "description": [
+       "Month-end date"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "aum_usd",
+      "description": [
+       "Assets of this product (USD)"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "product_code",
+      "description": [
+       "Product ticker of the ETF or fund"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "total_aum_usd",
+      "description": [
+       "Assets of all products tracking the index (USD)"
+      ],
+      "enable_format_assistance": true
+     }
+    ]
+   },
+   {
+    "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_index_constituents",
+    "column_configs": [
+     {
+      "column_name": "adv_usd_3m",
+      "description": [
+       "3-month average daily value traded (USD)"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "sector",
+      "description": [
+       "Sector from SEC SIC code"
+      ],
+      "enable_format_assistance": true,
+      "enable_entity_matching": true
+     },
+     {
+      "column_name": "ticker",
+      "description": [
+       "Security ticker"
+      ],
+      "enable_format_assistance": true,
+      "enable_entity_matching": true
+     },
+     {
+      "column_name": "weight",
+      "description": [
+       "Capped index weight (fraction 0-1)"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "weight_uncapped",
+      "description": [
+       "Market-cap weight before capping (fraction 0-1)"
+      ],
+      "enable_format_assistance": true
+     }
+    ]
+   },
+   {
+    "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_recon_predictions",
+    "column_configs": [
+     {
+      "column_name": "p_add",
+      "description": [
+       "Probability of being added at the next reconstitution"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "p_remove",
+      "description": [
+       "Probability of being removed at the next reconstitution"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "predicted_action",
+      "description": [
+       "ADD, REMOVE or HOLD"
+      ],
+      "enable_format_assistance": true,
+      "enable_entity_matching": true
+     },
+     {
+      "column_name": "ticker",
+      "description": [
+       "Security ticker"
+      ],
+      "enable_format_assistance": true,
+      "enable_entity_matching": true
+     },
+     {
+      "column_name": "top_drivers",
+      "description": [
+       "Plain-language reasons for the forecast"
+      ],
+      "enable_format_assistance": true
+     }
+    ]
+   },
+   {
+    "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_reconstitution_history",
+    "column_configs": [
+     {
+      "column_name": "action",
+      "description": [
+       "ADD, REMOVE or REWEIGHT"
+      ],
+      "enable_format_assistance": true,
+      "enable_entity_matching": true
+     },
+     {
+      "column_name": "effective_date",
+      "description": [
+       "Date the change took effect"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "event_type",
+      "description": [
+       "INITIAL_COMPOSITION, ANNUAL_RECONSTITUTION or SPECIAL_REBALANCE"
+      ],
+      "enable_format_assistance": true,
+      "enable_entity_matching": true
+     },
+     {
+      "column_name": "rank_at_reference",
+      "description": [
+       "Market-cap rank on the reference date"
+      ],
+      "enable_format_assistance": true
+     }
+    ]
+   },
+   {
+    "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly",
+    "column_configs": [
+     {
+      "column_name": "adv_usd_3m",
+      "description": [
+       "3-month average daily value traded (USD)"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "eligible",
+      "description": [
+       "Meets the eligibility rules"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "in_index",
+      "description": [
+       "Member of the NextDAQ-100 on that date"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "mcap_rank",
+      "description": [
+       "Rank by market cap among eligible securities (1 = largest)"
+      ],
+      "enable_format_assistance": true
+     },
+     {
+      "column_name": "sector",
+      "description": [
+       "Sector from SEC SIC code"
+      ],
+      "enable_format_assistance": true,
+      "enable_entity_matching": true
+     },
+     {
+      "column_name": "snapshot_date",
+      "description": [
+       "Month-end snapshot date (latest = current month to date)"
+      ],
+      "enable_format_assistance": true
+     }
+    ]
+   }
+  ]
+ },
+ "instructions": {
+  "text_instructions": [
+   {
+    "id": "51958bc6b5ac4899b0f2b4071c01e772",
+    "content": [
+     "You answer questions from the NextDAQ index methodology team and the index business about the NextDAQ-100.\n",
+     "Definitions:\n",
+     "- \"Latest snapshot\" = the most recent snapshot_date in gold_universe_monthly. Always filter to one snapshot_date unless a trend is asked.\n",
+     "- \"The cutoff\" = rank 100 (mcap_rank). \"Within N places of the cutoff\" = mcap_rank between 100-N and 100+N.\n",
+     "- Methodology bands: non-members ranked 90 or better are added; members ranked 110 or better are kept; members ranked worse than 110 are at risk of removal.\n",
+     "- mcap_rank only exists for eligible securities (non-financial, 3-month average daily value traded >= $5M). NULL rank = ineligible.\n",
+     "- Weights are fractions (0-1); show them as percentages with 2 decimals.\n",
+     "- \"Current index\" = gold_index_constituents (members at the latest snapshot with capped weights).\n",
+     "- \"Assets tracking the index\" = total_aum_usd in gold_etf_exposure (use the latest as_of_date unless a date is asked).\n",
+     "- \"ETF trading impact\" of a name = current capped weight x latest total assets tracking the index (USD).\n",
+     "- \"Reconstitution\" = event_type ANNUAL_RECONSTITUTION; \"special rebalance\" = event_type SPECIAL_REBALANCE.\n",
+     "- Forecast columns (p_add, p_remove, predicted_action) are MNPI; they are masked for users who are not cleared. If they come back NULL or RESTRICTED, say the user is not cleared to see them.\n",
+     "Do not give investment advice. Use tickers in answers, with company names where helpful."
+    ]
+   }
+  ],
+  "example_question_sqls": [
+   {
+    "id": "c0728934a986499eae57b4b0b3d7518a",
+    "question": [
+     "Which securities are within 3 places of the cutoff on the latest snapshot?"
+    ],
+    "sql": [
+     "SELECT ticker, company_name, mcap_rank, in_index FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly\n",
+     "WHERE snapshot_date = (SELECT max(snapshot_date) FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly)\n",
+     "  AND mcap_rank BETWEEN 97 AND 103\n",
+     "ORDER BY mcap_rank"
+    ]
+   },
+   {
+    "id": "ccafee9c84594d26969e90973ee9bff5",
+    "question": [
+     "What is the ETF trading impact of the current top 5 names?"
+    ],
+    "sql": [
+     "SELECT c.ticker, round(c.weight * a.total_aum_usd) AS trading_impact_usd\n",
+     "FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_index_constituents c\n",
+     "CROSS JOIN (SELECT max_by(total_aum_usd, as_of_date) AS total_aum_usd FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_etf_exposure) a\n",
+     "ORDER BY c.weight DESC LIMIT 5"
+    ]
+   }
+  ],
+  "join_specs": [
+   {
+    "id": "0878c24dbe7e4cc6be53723e76e60fd1",
+    "left": {
+     "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_recon_predictions",
+     "alias": "forecast"
+    },
+    "right": {
+     "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_index_constituents",
+     "alias": "constituents"
+    },
+    "sql": [
+     "`forecast`.`ticker` = `constituents`.`ticker`",
+     "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_ONE--"
+    ]
+   },
+   {
+    "id": "68844726efec40e595cef22b89815292",
+    "left": {
+     "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_index_constituents",
+     "alias": "constituents"
+    },
+    "right": {
+     "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly",
+     "alias": "universe"
+    },
+    "sql": [
+     "`constituents`.`ticker` = `universe`.`ticker` AND `constituents`.`snapshot_date` = `universe`.`snapshot_date`",
+     "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_ONE--"
+    ]
+   },
+   {
+    "id": "e077e8644d1d4944b9c67955a4ea5d3e",
+    "left": {
+     "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_reconstitution_history",
+     "alias": "history"
+    },
+    "right": {
+     "identifier": "fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly",
+     "alias": "universe"
+    },
+    "sql": [
+     "`history`.`ticker` = `universe`.`ticker` AND `history`.`reference_date` = `universe`.`snapshot_date`",
+     "--rt=FROM_RELATIONSHIP_TYPE_MANY_TO_ONE--"
+    ]
+   }
+  ]
+ },
+ "benchmarks": {
+  "questions": [
+   {
+    "id": "da1e6033f9c443a7ad1d5de677759980",
+    "question": [
+     "Which 10 current index members have the lowest 3-month average daily value traded?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT ticker, company_name, adv_usd_3m FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_index_constituents ORDER BY adv_usd_3m ASC LIMIT 10"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "b9ae46992b9942c397664ee5518f09e6",
+    "question": [
+     "What were the total assets tracking the index at each month-end in 2026?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT as_of_date, max(total_aum_usd) AS total_aum_usd FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_etf_exposure WHERE year(as_of_date) = 2026 GROUP BY 1 ORDER BY 1"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "9b2e8ea109cf4f71a291394dd0813b11",
+    "question": [
+     "How many members does each sector have in the current index?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT sector, count(*) AS members FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_index_constituents GROUP BY 1 ORDER BY 2 DESC, 1"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "921706b5035b4a20830bd11a04d6d6e3",
+    "question": [
+     "Which names does the forecast predict will be added or removed at the next reconstitution?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT ticker, predicted_action, round(p_add, 3) AS p_add, round(p_remove, 3) AS p_remove FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_recon_predictions WHERE predicted_action IN ('ADD', 'REMOVE') ORDER BY predicted_action, ticker"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "8e7ead63177b4e74a92ef55640fc4ac8",
+    "question": [
+     "How many securities are eligible for the index on the latest snapshot?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT count_if(eligible) AS eligible_securities FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly WHERE snapshot_date = (SELECT max(snapshot_date) FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly)"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "7524cc6bb5dd4b589d1064145ca84087",
+    "question": [
+     "How many additions and removals were there in each of the last 3 annual reconstitutions?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT year(effective_date) AS year, count_if(action = 'ADD') AS additions, count_if(action = 'REMOVE') AS removals FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_reconstitution_history WHERE event_type = 'ANNUAL_RECONSTITUTION' GROUP BY 1 ORDER BY 1 DESC LIMIT 3"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "5eb9bb5a4d884d22ada6194bb6913544",
+    "question": [
+     "Which current index members rank worse than 110 on the latest snapshot?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT ticker, company_name, mcap_rank FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly WHERE snapshot_date = (SELECT max(snapshot_date) FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly) AND in_index AND (mcap_rank > 110 OR mcap_rank IS NULL) ORDER BY mcap_rank"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "5ae7ad36cf09441386de0319e5e760b8",
+    "question": [
+     "Which securities rank within 5 places of the cutoff (ranks 95 to 105) on the latest snapshot?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT ticker, company_name, mcap_rank, in_index FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly WHERE snapshot_date = (SELECT max(snapshot_date) FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly) AND mcap_rank BETWEEN 95 AND 105 ORDER BY mcap_rank"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "58c30ef6e0804be598eee602a850fc28",
+    "question": [
+     "Which Technology stocks are within 10 ranks of the cutoff on the latest snapshot?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT ticker, company_name, mcap_rank, in_index FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly WHERE snapshot_date = (SELECT max(snapshot_date) FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly) AND sector = 'Technology' AND mcap_rank BETWEEN 90 AND 110 ORDER BY mcap_rank"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "39aa967e58964e8b951688a2655367d2",
+    "question": [
+     "Which non-members rank inside the top 90 on the latest snapshot?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT ticker, company_name, mcap_rank FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly WHERE snapshot_date = (SELECT max(snapshot_date) FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly) AND NOT in_index AND mcap_rank <= 90 ORDER BY mcap_rank"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "354729d1d1a847348e38084678562026",
+    "question": [
+     "What are the combined top-10 weight and the largest single weight in the current index?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT round(sum(weight) * 100, 2) AS top10_weight_pct, round(max(weight) * 100, 2) AS max_weight_pct FROM (SELECT weight FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_index_constituents ORDER BY weight DESC LIMIT 10)"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "188b761718df466785204ac6a8c0a8b0",
+    "question": [
+     "When were the special rebalances and how many names were reweighted in each?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT effective_date, count(*) AS names_reweighted FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_reconstitution_history WHERE event_type = 'SPECIAL_REBALANCE' GROUP BY 1 ORDER BY 1"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "0b092c1f869049c08acb4c41481f1f99",
+    "question": [
+     "Which predicted removals have the highest ETF trading impact?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT p.ticker, round(c.weight * a.total_aum_usd) AS trading_impact_usd FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_recon_predictions p JOIN fe_bar_2026_kelemen_catalog.nextdaq_index.gold_index_constituents c ON c.ticker = p.ticker CROSS JOIN (SELECT max_by(total_aum_usd, as_of_date) AS total_aum_usd FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_etf_exposure) a WHERE p.predicted_action = 'REMOVE' ORDER BY trading_impact_usd DESC"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "09642cc05539491796de43ad56d6c984",
+    "question": [
+     "How has SMCI's market-cap rank changed over the last 12 months?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT snapshot_date, mcap_rank FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly WHERE ticker = 'SMCI' AND snapshot_date >= add_months((SELECT max(snapshot_date) FROM fe_bar_2026_kelemen_catalog.nextdaq_index.gold_universe_monthly), -12) ORDER BY snapshot_date"
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

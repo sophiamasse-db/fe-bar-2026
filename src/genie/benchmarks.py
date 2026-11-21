@@ -1,0 +1,35 @@
+"""Genie benchmark questions (approved by me) with ground-truth SQL. Used by tools/genie.py for the space definition,
+the benchmark run and evidence/08_genie.md. Each entry: (id, question, ground-truth SQL, key column index)."""
+S = "fe_bar_2026_kelemen_catalog.nextdaq_index"
+LATEST = f"(SELECT max(snapshot_date) FROM {S}.gold_universe_monthly)"
+
+QUESTIONS = [
+    ("Q01", "Which securities rank within 5 places of the cutoff (ranks 95 to 105) on the latest snapshot?",
+     f"SELECT ticker, company_name, mcap_rank, in_index FROM {S}.gold_universe_monthly WHERE snapshot_date = {LATEST} AND mcap_rank BETWEEN 95 AND 105 ORDER BY mcap_rank", 0),
+    ("Q02", "Which Technology stocks are within 10 ranks of the cutoff on the latest snapshot?",
+     f"SELECT ticker, company_name, mcap_rank, in_index FROM {S}.gold_universe_monthly WHERE snapshot_date = {LATEST} AND sector = 'Technology' AND mcap_rank BETWEEN 90 AND 110 ORDER BY mcap_rank", 0),
+    ("Q03", "Which current index members rank worse than 110 on the latest snapshot?",
+     f"SELECT ticker, company_name, mcap_rank FROM {S}.gold_universe_monthly WHERE snapshot_date = {LATEST} AND in_index AND (mcap_rank > 110 OR mcap_rank IS NULL) ORDER BY mcap_rank", 0),
+    ("Q04", "Which non-members rank inside the top 90 on the latest snapshot?",
+     f"SELECT ticker, company_name, mcap_rank FROM {S}.gold_universe_monthly WHERE snapshot_date = {LATEST} AND NOT in_index AND mcap_rank <= 90 ORDER BY mcap_rank", 0),
+    ("Q05", "How many additions and removals were there in each of the last 3 annual reconstitutions?",
+     f"SELECT year(effective_date) AS year, count_if(action = 'ADD') AS additions, count_if(action = 'REMOVE') AS removals FROM {S}.gold_reconstitution_history WHERE event_type = 'ANNUAL_RECONSTITUTION' GROUP BY 1 ORDER BY 1 DESC LIMIT 3", 0),
+    ("Q06", "When were the special rebalances and how many names were reweighted in each?",
+     f"SELECT effective_date, count(*) AS names_reweighted FROM {S}.gold_reconstitution_history WHERE event_type = 'SPECIAL_REBALANCE' GROUP BY 1 ORDER BY 1", 1),
+    ("Q07", "Which 10 current index members have the lowest 3-month average daily value traded?",
+     f"SELECT ticker, company_name, adv_usd_3m FROM {S}.gold_index_constituents ORDER BY adv_usd_3m ASC LIMIT 10", 0),
+    ("Q08", "How has SMCI's market-cap rank changed over the last 12 months?",
+     f"SELECT snapshot_date, mcap_rank FROM {S}.gold_universe_monthly WHERE ticker = 'SMCI' AND snapshot_date >= add_months({LATEST}, -12) ORDER BY snapshot_date", 1),
+    ("Q09", "How many securities are eligible for the index on the latest snapshot?",
+     f"SELECT count_if(eligible) AS eligible_securities FROM {S}.gold_universe_monthly WHERE snapshot_date = {LATEST}", 0),
+    ("Q10", "What are the combined top-10 weight and the largest single weight in the current index?",
+     f"SELECT round(sum(weight) * 100, 2) AS top10_weight_pct, round(max(weight) * 100, 2) AS max_weight_pct FROM (SELECT weight FROM {S}.gold_index_constituents ORDER BY weight DESC LIMIT 10)", 0),
+    ("Q11", "What were the total assets tracking the index at each month-end in 2026?",
+     f"SELECT as_of_date, max(total_aum_usd) AS total_aum_usd FROM {S}.gold_etf_exposure WHERE year(as_of_date) = 2026 GROUP BY 1 ORDER BY 1", 1),
+    ("Q12", "How many members does each sector have in the current index?",
+     f"SELECT sector, count(*) AS members FROM {S}.gold_index_constituents GROUP BY 1 ORDER BY 2 DESC, 1", 1),
+    ("Q13", "Which names does the forecast predict will be added or removed at the next reconstitution?",
+     f"SELECT ticker, predicted_action, round(p_add, 3) AS p_add, round(p_remove, 3) AS p_remove FROM {S}.gold_recon_predictions WHERE predicted_action IN ('ADD', 'REMOVE') ORDER BY predicted_action, ticker", 0),
+    ("Q14", "Which predicted removals have the highest ETF trading impact?",
+     f"SELECT p.ticker, round(c.weight * a.total_aum_usd) AS trading_impact_usd FROM {S}.gold_recon_predictions p JOIN {S}.gold_index_constituents c ON c.ticker = p.ticker CROSS JOIN (SELECT max_by(total_aum_usd, as_of_date) AS total_aum_usd FROM {S}.gold_etf_exposure) a WHERE p.predicted_action = 'REMOVE' ORDER BY trading_impact_usd DESC", 0),
+]

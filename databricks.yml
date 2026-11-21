@@ -26,6 +26,15 @@ variables:
   code_root:
     description: Job source code location (UC volume), synced by tools/deploy.sh
     default: dbfs:/Volumes/${var.catalog}/${var.schema}/code/src
+  genie_space_id:
+    description: Genie space created by tools/genie.py (src/genie/space_id.txt)
+    default: 01f1e5d540d61ef3b6d757b4cb45a66e
+  lakebase_database:
+    description: Lakebase database resource for the app (database `nextdaq`)
+    default: projects/nextdaq-ops/branches/production/databases/db-1s53-blx0xq4j8k
+  app_sp:
+    description: Client id of the app's service principal (Postgres role for Lakebase grants)
+    default: 2258c155-590d-44d3-8527-605333b6cd38
   tester_sp:
     description: Application id of the non-admin access-test service principal (Client Services persona)
     default: ecdea4a2-ebe7-45a1-ae4e-e00598744b5c

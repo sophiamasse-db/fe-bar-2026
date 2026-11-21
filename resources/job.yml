@@ -56,4 +56,5 @@ resources:
           spark_python_task:
             python_file: ${var.code_root}/serve/sync_lakebase.py
             parameters: ["--catalog", "${var.catalog}", "--schema", "${var.schema}",
-                         "--endpoint", "projects/${var.lakebase_project}/branches/production/endpoints/primary"]
+                         "--endpoint", "projects/${var.lakebase_project}/branches/production/endpoints/primary",
+                         "--app-sp", "${var.app_sp}"]

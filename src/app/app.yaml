@@ -1,0 +1,14 @@
+command: ["streamlit", "run", "app.py", "--server.headless", "true"]
+env:
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql-warehouse
+  - name: GENIE_SPACE_ID
+    valueFrom: genie-space
+  - name: LLM_ENDPOINT
+    valueFrom: llm-endpoint
+  - name: LAKEBASE_ENDPOINT
+    value: projects/nextdaq-ops/branches/production/endpoints/primary
+  - name: CATALOG
+    value: fe_bar_2026_kelemen_catalog
+  - name: SCHEMA
+    value: nextdaq_index
