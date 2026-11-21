@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 80" role="img" aria-label="NextDAQ">
+  <rect x="6" y="44" width="12" height="26" rx="3" fill="#0B1F3A"/>
+  <rect x="24" y="30" width="12" height="40" rx="3" fill="#00A6A0"/>
+  <rect x="42" y="14" width="12" height="56" rx="3" fill="#3DD9D0"/>
+  <path d="M60 22 L76 40 L60 58" fill="none" stroke="#F2A93B" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

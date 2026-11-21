@@ -1,3 +1,4 @@
 databricks-sql-connector>=3.4
 databricks-sdk>=0.70
 psycopg[binary]>=3.2
+streamlit>=1.44
