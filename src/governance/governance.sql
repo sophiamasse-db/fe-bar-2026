@@ -3,6 +3,7 @@
 --         Forward-looking index decisions are MNPI: add/remove forecasts and scenario briefs are limited to people
 --         cleared for MNPI, and analysts see forecasts only for the sectors they cover.
 -- Access is data: one row per principal in `entitlements`. Function bodies need literal object names.
+-- The job owner (the Head of Methodology who runs this task) is seeded with current_user(); no emails in code.
 
 USE CATALOG fe_bar_2026_kelemen_catalog;
 USE SCHEMA nextdaq_index;
@@ -17,7 +18,7 @@ CREATE TABLE IF NOT EXISTS entitlements (
 ) COMMENT 'Who may see what. Access changes are row changes, not code changes.';
 
 MERGE INTO entitlements t
-USING (SELECT '<job-owner>' AS principal, 'HEAD_OF_METHODOLOGY' AS persona, 'ALL' AS sector_scope,
+USING (SELECT current_user() AS principal, 'HEAD_OF_METHODOLOGY' AS persona, 'ALL' AS sector_scope,
               true AS can_see_mnpi, true AS can_approve) s
 ON t.principal = s.principal
 WHEN NOT MATCHED THEN INSERT (principal, persona, sector_scope, can_see_mnpi, can_approve, updated_at)

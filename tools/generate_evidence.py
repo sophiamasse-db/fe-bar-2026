@@ -187,7 +187,8 @@ def ev_05():
     write("05_ai_evaluation.md", txt[:9000])
 
 
-ME = "<job-owner>"
+ME = json.loads(subprocess.run(["databricks", "current-user", "me", "-p", PROFILE, "-o", "json"],
+                             capture_output=True, text=True, check=True).stdout)["userName"]   # signed-in user, not hard-coded
 TESTER_SP = "ecdea4a2-ebe7-45a1-ae4e-e00598744b5c"
 PERSONAS = [("HEAD_OF_METHODOLOGY", "ALL", True, True), ("METHODOLOGY_ANALYST", "Technology", True, False),
             ("CLIENT_SERVICES", "ALL", False, False)]
