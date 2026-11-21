@@ -29,12 +29,13 @@ FROM STREAM read_files('${landing_path}/public/sec_sic/', format => 'json',
 
 CREATE OR REFRESH STREAMING TABLE bronze_sec_facts
 COMMENT 'SEC XBRL frames: one row per filer x fact x period (shares outstanding, public float)'
-AS SELECT tag, uom, ccp AS frame, d.cik, d.entityName AS entity_name, d.end AS period_end, d.val AS value,
+AS SELECT tag, uom, ccp AS frame, d.cik, d.entityName AS entity_name, d.start AS period_start, d.end AS period_end, d.val AS value,
   d.accn AS accession, _source_file, _ingested_at
 FROM (
   SELECT tag, uom, ccp, explode(data) AS d, _metadata.file_path AS _source_file, current_timestamp() AS _ingested_at
   FROM STREAM read_files('${landing_path}/public/sec_facts/', format => 'json', multiLine => true,
-                         schemaHints => 'data ARRAY<STRUCT<accn STRING, cik STRING, entityName STRING, loc STRING, end STRING, val STRING>>')
+                         schemaHints => 'data ARRAY<STRUCT<accn STRING, cik STRING, entityName STRING, loc STRING, start STRING, end STRING, val STRING>>',
+                         schemaEvolutionMode => 'rescue')
 );
 
 CREATE OR REFRESH STREAMING TABLE bronze_daily_prices

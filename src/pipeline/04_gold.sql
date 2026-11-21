@@ -42,7 +42,7 @@ SELECT *, mcap_rank - 100 AS ranks_from_cutoff,
 FROM ranked;
 
 CREATE OR REFRESH MATERIALIZED VIEW gold_index_constituents
-COMMENT 'Current NextDAQ-100 baseline: members at the latest snapshot with market-cap and capped weights (two-stage cap: names above 4.5% scaled to 40% when they exceed 48%, others capped at 4.4%)'
+COMMENT 'Current NextDAQ-100 baseline: members at the latest snapshot with market-cap and capped weights (two-stage cap: names above 4.5% scaled to 40% when they exceed 48%, others capped at the lower of 4.4% and the smallest large weight)'
 AS WITH latest AS (
   SELECT * FROM gold_universe_monthly
   WHERE in_index AND snapshot_date = (SELECT max(snapshot_date) FROM gold_universe_monthly)
@@ -56,19 +56,21 @@ AS WITH latest AS (
     CASE WHEN large_sum <= 0.48 THEN weight_uncapped
          WHEN is_large THEN weight_uncapped * 0.40 / large_sum
          ELSE weight_uncapped * 0.60 / (1 - large_sum) END AS w1 FROM g
+), s3 AS (
+  SELECT *, LEAST(0.044, coalesce(min(CASE WHEN is_large THEN w1 END) OVER (), 0.044)) AS small_cap FROM s2
 ), p1 AS (
-  SELECT *, CASE WHEN stage2 AND NOT is_large AND w1 > 0.044 THEN 0.044
-                 WHEN stage2 AND NOT is_large THEN w1 + w1 / sum(CASE WHEN NOT is_large AND w1 <= 0.044 THEN w1 END) OVER ()
-                      * sum(CASE WHEN NOT is_large AND w1 > 0.044 THEN w1 - 0.044 ELSE 0 END) OVER ()
-                 ELSE w1 END AS w2 FROM s2
+  SELECT *, CASE WHEN stage2 AND NOT is_large AND w1 > small_cap THEN small_cap
+                 WHEN stage2 AND NOT is_large THEN w1 + w1 / sum(CASE WHEN NOT is_large AND w1 <= small_cap THEN w1 END) OVER ()
+                      * sum(CASE WHEN NOT is_large AND w1 > small_cap THEN w1 - small_cap ELSE 0 END) OVER ()
+                 ELSE w1 END AS w2 FROM s3
 ), p2 AS (
-  SELECT *, CASE WHEN stage2 AND NOT is_large AND w2 > 0.044 THEN 0.044
-                 WHEN stage2 AND NOT is_large THEN w2 + w2 / sum(CASE WHEN NOT is_large AND w2 <= 0.044 THEN w2 END) OVER ()
-                      * sum(CASE WHEN NOT is_large AND w2 > 0.044 THEN w2 - 0.044 ELSE 0 END) OVER ()
+  SELECT *, CASE WHEN stage2 AND NOT is_large AND w2 > small_cap THEN small_cap
+                 WHEN stage2 AND NOT is_large THEN w2 + w2 / sum(CASE WHEN NOT is_large AND w2 <= small_cap THEN w2 END) OVER ()
+                      * sum(CASE WHEN NOT is_large AND w2 > small_cap THEN w2 - small_cap ELSE 0 END) OVER ()
                  ELSE w2 END AS w3 FROM p1
 )
 SELECT snapshot_date, ticker, company_name, sector, close, shares, market_cap, adv_usd_3m, mcap_rank,
-  weight_uncapped, LEAST(w3, CASE WHEN stage2 AND NOT is_large THEN 0.044 ELSE 1 END) AS weight,
+  weight_uncapped, LEAST(w3, CASE WHEN stage2 AND NOT is_large THEN small_cap ELSE 1 END) AS weight,
   is_large AS in_aggregate_cap_group
 FROM p2;
 

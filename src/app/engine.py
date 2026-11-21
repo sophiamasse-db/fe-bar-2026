@@ -4,8 +4,8 @@ synthetic-history generator (src/data/generate.py), the ML labels and the app's 
 Simplified NextDAQ-100 methodology (fictional, modelled on public large-cap index rules):
   * Eligible: exchange-listed common stock / ordinary shares / ADS, not a financial (SIC 6000-6799),
     3-month average daily dollar volume >= liquidity minimum, sector not excluded.
-  * Ranked by market cap. Non-members ranked in the top 75% of the index size are added; members ranked
-    within the buffer stay; the index is then trimmed or filled to its size by rank.
+  * Ranked by market cap. Non-members ranked within `add_rank` (90) are added; members ranked within
+    `buffer_rank` (110) stay; the index is then trimmed or filled to its size by rank.
   * Weights: market-cap weights, then two-stage capping:
       stage 1 - no single weight above the single-stock target;
       stage 2 - if names above the aggregate threshold together exceed the aggregate cap, they are scaled
@@ -22,7 +22,8 @@ import pandas as pd
 @dataclass
 class Rules:
     index_size: int = 100
-    buffer_rank: int = 125
+    add_rank: int = 90                # non-members ranked at or above this are added
+    buffer_rank: int = 110            # members ranked at or above this stay
     liquidity_min_usd: float = 5_000_000.0
     single_cap: float = 0.24          # breach trigger for one name
     single_target: float = 0.20       # weight a breaching name is cut to
@@ -72,7 +73,7 @@ def rank_universe(u: pd.DataFrame, rules: Rules) -> pd.DataFrame:
 def select_members(u: pd.DataFrame, current: set, rules: Rules, skip_adds: set = frozenset()) -> set:
     """Apply the reconstitution rule. u must be ranked (rank_universe). Returns the new member set."""
     r = u.dropna(subset=["rank"]).set_index("ticker")["rank"].sort_values()
-    must_add_cut = int(round(0.75 * rules.index_size))
+    must_add_cut = rules.add_rank
     keep = {t for t in current if t in r.index and r[t] <= rules.buffer_rank}
     adds = {t for t, k in r.items() if t not in current and k <= must_add_cut and t not in skip_adds}
     chosen = keep | adds
@@ -117,7 +118,7 @@ def cap_weights(market_cap: pd.Series, rules: Rules) -> pd.Series:
     if w[big].sum() > rules.agg_cap:                            # stage 2
         wb = w[big] * rules.agg_target / w[big].sum()
         ws = w[~big] * (1 - rules.agg_target) / w[~big].sum()
-        ws = _cap_iter(ws, rules.agg_threshold - 0.001)
+        ws = _cap_iter(ws, min(rules.agg_threshold - 0.001, float(wb.min())))   # never above the smallest large name
         w = pd.concat([wb, ws])
     return (w / w.sum()).reindex(market_cap.index)
 

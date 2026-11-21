@@ -63,6 +63,7 @@ N_DUP, N_BAD_PRICE, N_NEG_VOL, MANIFEST_SHORT = 37, 12, 5, 3
 DUP_PERIOD, SHORT_PERIOD = "2025-03", "20261113"
 TOTAL_AUM_LATEST = 400e9
 SEC_FIXES: dict = {}
+LAST_INCOMPLETE_MONTH_END = pd.Timestamp(END)   # current month is not complete: no concentration check
 DIAG: dict = {}
 
 
@@ -153,12 +154,15 @@ def simulate(u: pd.DataFrame, shares: pd.DataFrame, days: pd.DatetimeIndex, rng)
     x = np.zeros((D, N))
     for t in range(1, D):
         x[t] = phi * x[t - 1] + eps[t]
-    trend = rng.normal(0, 0.12, N) / 252                             # persistent growth / decline per company
+    trend = rng.normal(0, 0.18, N) / 252                             # persistent growth / decline per company
     logp = np.cumsum(mkt[:, None] * beta + sec_f[:, sector] + trend[None, :], axis=0) + x
     R = np.vstack([np.zeros((1, N)), np.diff(logp, axis=0)])
     ai = np.clip(days.searchsorted(u["anchor_date"].values), 0, D - 1)
     p_anchor = u["market_cap_anchor"].values / shares_m[ai, np.arange(N)]
     logp += (np.log(p_anchor) - logp[ai, np.arange(N)])[None, :]
+    # Model MARKET CAP as the continuous path, then price = market cap / shares on each day, so share-count
+    # changes (splits, buybacks, issuance) move the price, not the company's size.
+    logp += np.log(shares_m[ai, np.arange(N)])[None, :] - np.log(shares_m)
 
     turnover = np.exp(rng.normal(np.log(0.006), 0.6, N))
     dvol = u["market_cap_anchor"].values * turnover * np.exp(rng.normal(0, 0.4, (D, N))) * (1 + 15 * np.abs(R))
@@ -211,7 +215,7 @@ def run_history(snaps: dict, rules: Rules) -> tuple[list, dict]:
                                "event_type": etype, "action": act,
                                "weight_after": round(float(w.get(t, 0.0)), 6), "reference_date": d.date()})
             members, units = new, (w / c["close"])
-        elif members:
+        elif members and d != LAST_INCOMPLETE_MONTH_END:
             c = s[s["ticker"].isin(members)].set_index("ticker")
             wt = units * c["close"]
             wt = wt / wt.sum()
@@ -355,10 +359,11 @@ def main():
     # pass 1: find the capped "big" group after the Dec 2024 reconstitution, then plant the rally on it
     snaps = month_end_snapshots(u, sim, days)
     ev1, _ = run_history({d: s for d, s in snaps.items() if d <= pd.Timestamp("2024-12-31")}, rules)
-    m24 = pd.DataFrame(ev1).groupby("symbol")["action"].last().loc[lambda x: x == "ADD"].index
+    e1 = pd.DataFrame(ev1)
+    m24 = e1[e1["action"].isin(["ADD", "REMOVE"])].groupby("symbol")["action"].last().loc[lambda x: x == "ADD"].index
     s24 = snaps[max(d for d in snaps if d.year == 2024 and d.month == 11)].set_index("ticker").loc[list(m24)]
     w24 = cap_weights(s24["market_cap"], rules)
-    big = list(w24.sort_values(ascending=False).head(RALLY_TOP_N).index)   # the seven largest names rally together
+    big = list(s24["market_cap"].sort_values(ascending=False).head(RALLY_TOP_N).index)   # seven largest companies rally
     DIAG["dec2024_top10_capped_weights"] = {t: round(float(v), 4) for t, v in w24.sort_values(ascending=False).head(10).items()}
     DIAG["dec2024_top10_uncapped_weights"] = {t: round(float(v), 4) for t, v in
                                              (s24["market_cap"] / s24["market_cap"].sum()).sort_values(ascending=False).head(10).items()}
