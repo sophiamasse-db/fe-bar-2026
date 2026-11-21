@@ -1,0 +1,13 @@
+.databricks/
+.env
+.env.*
+*.pem
+*.key
+.databrickscfg
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.DS_Store
+notes/
+*.local.md
