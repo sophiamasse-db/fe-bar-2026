@@ -27,4 +27,17 @@ Written and committed **2026-11-21, before any model or AI output exists.** Late
 
 ## Change log
 
-(none yet)
+### 2026-11-21 — amendment 1 (written after v1 results, before any v2 run)
+
+**v1 results stand as the original, official result** (job run 574811579792389; tables `ml_eval_metrics_v1`, `ai_eval_results` where prompt_version = 'v1'):
+- ML, held-out Dec-2025 reconstitution from the Oct-2025 snapshot: model F1 adds 0.40 vs baseline 0.71; removes 0.67 vs baseline 0.86. **The v1 model did not beat the baseline.**
+- GenAI: 0 of 8 briefs passed all four judges (no_invention 0%, grounded 75%, compliant_tone 100%, actionable_notice 100%).
+
+Changes for v2, decided by me before running them:
+1. **ML threshold** is chosen by leave-one-reconstitution-out cross-validation on 2022-2024 only (maximise mean F1 across the three folds), never on the held-out year. v1 used a fixed 0.5.
+2. **ML features** add the methodology's own band flags: non-member inside the add band (rank <= 90), member outside the retention band (rank > 110). Everything else (data, held-out year, snapshot, baseline, main measure, no-claim rule) is unchanged.
+3. **GenAI judge `no_invention`** was in conflict with the prompt and the `actionable_notice` judge: both require the sentence that full details follow in the official announcement. The judge now allows exactly that one reference and nothing else. No other judge changes.
+4. **GenAI prompt v2** requires that exact sentence and forbids mentioning any other document, guidance, event or instruction to recipients.
+5. Judge results now come from one source (the per-row assessments of the `mlflow.genai.evaluate` run), because separate judge calls on the same outputs disagreed (judges are not fully deterministic). Pass rates are reported with that caveat.
+
+If v2 still does not beat the baseline, the README says so and the forecast is presented as a ranked watchlist with probabilities and reasons, not as more accurate than the rule.
