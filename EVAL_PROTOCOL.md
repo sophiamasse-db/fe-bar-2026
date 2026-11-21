@@ -52,3 +52,9 @@ Design change for v3 (no judge changes):
 3. The same four judges, unchanged, evaluate all outputs (summary, risks and the templated notice).
 
 The ML forecast is final at v2 and is presented as a ranked watchlist with probabilities and reasons, not as more accurate than the rule.
+
+### 2026-11-21 — amendment 3, FINAL (written after v3 results, before the v3.1 run)
+
+**v3 results stand** (job run 527594130585174, repair): grounded 100%, actionable_notice 100%, compliant_tone 87.5%, no_invention 12.5%; 1 of 8 briefs passed all judges. 6 of 7 no_invention failures cite words the facts never stated ("rebalance", "ETF"); 2 are genuine (an invented "settlement window"; alarmist wording).
+
+v3.1 changes (no judge changes): the facts state the event ("proposed NextDAQ-100 rebalance") and that the AUM belongs to ETFs and other products tracking the index; the prompt adds "use neutral language; do not characterise risks beyond the facts". **v3.1 is final: its result is reported whatever it is.** No further prompt or judge changes before submission.
