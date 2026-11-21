@@ -2,9 +2,9 @@
 
 Google Slides: https://docs.google.com/presentation/d/1vVHQvhakpZE94rTSKyphTQd5FXsDzOe3BAKDFVts0bA/edit (PDF in this folder). NextDAQ branding on the 2025 Databricks template; built by tools/build_deck.py. Numbers match evidence/HEADLINES.md.
 
-## Slide 1: For the Head of the Index Business and the Head of Index Methodology
+## Slide 1: Test every rebalance rule change in minutes, before you announce it
 
-- Test every rebalance rule change in minutes, before you announce it
+- For the Head of the Index Business and the Head of Index Methodology
 - NextDAQ-100 Rebalance Simulator
 - November 2026  ·  Powered by Databricks
 
