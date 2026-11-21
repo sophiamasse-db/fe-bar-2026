@@ -41,3 +41,14 @@ Changes for v2, decided by me before running them:
 5. Judge results now come from one source (the per-row assessments of the `mlflow.genai.evaluate` run), because separate judge calls on the same outputs disagreed (judges are not fully deterministic). Pass rates are reported with that caveat.
 
 If v2 still does not beat the baseline, the README says so and the forecast is presented as a ranked watchlist with probabilities and reasons, not as more accurate than the rule.
+
+### 2026-11-21 — amendment 2 (written after v2 results, before any v3 run)
+
+**v2 results stand** (job run 527594130585174): ML F1 adds 0.40 vs baseline 0.71, removes 0.73 vs 0.86 (thresholds 0.65 / 0.15 from cross-validation) — **v2 does not beat the baseline; no accuracy claim is made.** GenAI v2: 0 of 8 briefs passed all four judges (no_invention 0%, grounded 62.5%, compliant_tone 87.5%, actionable_notice 100%). Failures were genuine errors (a cap described as breached when it was not; company names rewritten) and boilerplate labels the model added to the notice.
+
+Design change for v3 (no judge changes):
+1. The **ETF-issuer notice is a deterministic template** filled from the scenario facts (effective date, additions, removals, the required closing sentence). A client-facing regulated notice should not be free text from an LLM. The "draft / pending approval" status is shown by the app, not written into the text.
+2. The **LLM writes only the impact summary and key risks**, refers to companies by ticker only, and receives explicit cap limits and breach flags in the facts.
+3. The same four judges, unchanged, evaluate all outputs (summary, risks and the templated notice).
+
+The ML forecast is final at v2 and is presented as a ranked watchlist with probabilities and reasons, not as more accurate than the rule.
