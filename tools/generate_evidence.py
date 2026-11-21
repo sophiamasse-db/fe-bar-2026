@@ -399,11 +399,15 @@ def ev_10():
     for e in [e for e in evs if e["event"] in ("scenario_submitted", "scenario_decision", "ai_summary", "genie_answer")]:
         d = {k: v for k, v in e.items() if k not in ("event", "at", "persona")}
         txt += f"| {e['at']} | {e['event']} | {e['persona']} | {json.dumps(d, default=str)[:220].replace('|', '/')} |\n"
-    txt += "\n## Scenario runs (last 6)\n\n| at | name | shock | additions | removals | turnover % | max weight % | max days to trade |\n|---|---|---|---|---|---|---|---|\n"
+    timed = [e["compute_ms"] for e in evs if e["event"] == "scenario_run" and "compute_ms" in e]
+    if timed:
+        txt += (f"\n## Scenario compute time\n\n{len(timed)} timed scenario runs over {next((e['universe'] for e in evs if 'universe' in e), '-')} securities: "
+                f"min {min(timed)} ms, max {max(timed)} ms (engine only, after the governed data is loaded).\n")
+    txt += "\n## Scenario runs (last 6)\n\n| at | persona | shock | additions | removals | turnover % | max weight % | max days to trade | compute ms |\n|---|---|---|---|---|---|---|---|---|\n"
     for e in [e for e in evs if e["event"] == "scenario_run"][-6:]:
         k = e["kpis"]
-        txt += (f"| {e['at']} | {e['name']} | {e['shock'].get('ticker') or '-'} {e['shock'].get('pct') if e['shock'].get('ticker') else ''} | "
-                f"{k['additions']} | {k['removals']} | {k['turnover_pct']} | {k['max_weight_pct']} | {k['max_days_to_trade']} |\n")
+        txt += (f"| {e['at']} | {e['persona']} | {e['shock'].get('ticker') or '-'} {e['shock'].get('pct') if e['shock'].get('ticker') else ''} | "
+                f"{k['additions']} | {k['removals']} | {k['turnover_pct']} | {k['max_weight_pct']} | {k['max_days_to_trade']} | {e.get('compute_ms', '-')} |\n")
     write("10_app.md", txt[:9000])
 
 

@@ -323,9 +323,14 @@ elif page == "Scenario Lab":
         name = st.text_input("Scenario name", "My scenario")
     rules = engine.Rules(agg_cap=agg_cap, agg_target=min(agg_target, agg_cap), single_target=single_target,
                          liquidity_min_usd=liq * 1e6, add_rank=add_rank, buffer_rank=keep_rank, exclude_sectors=tuple(excl))
+    import time as _t
+    t0 = _t.perf_counter()
     sc = run_scenario(u, current, aum, rules, None if shock_t == "(none)" else shock_t, shock_p, name)
+    elapsed_ms = round((_t.perf_counter() - t0) * 1000)
     k, k0 = sc["kpis"], sc["kpis_today"]
-    log_event("scenario_run", name=name, rules=sc["rules"], shock=sc["shock"], kpis={x: round(v, 2) for x, v in k.items()})
+    log_event("scenario_run", name=name, rules=sc["rules"], shock=sc["shock"], kpis={x: round(v, 2) for x, v in k.items()},
+              compute_ms=elapsed_ms, universe=len(u))
+    st.caption(f"Scenario computed in {elapsed_ms:,} ms across {len(u):,} securities.")
     cards([("Additions · removals", f"{k['additions']} · {k['removals']}", "constituent changes", "navy"),
            ("Turnover", f"{k['turnover_pct']:.2f}%", "one-way, by weight", ""),
            ("Top-10 weight", f"{k['top10_weight_pct']:.1f}%", delta(k["top10_weight_pct"], k0["top10_weight_pct"]), ""),

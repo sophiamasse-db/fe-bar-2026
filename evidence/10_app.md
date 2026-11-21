@@ -1,6 +1,6 @@
 # 10 — Databricks App
 
-Generated 2026-11-21 19:03 UTC by tools/generate_evidence.py from the live workspace.
+Generated 2026-11-21 19:23 UTC by tools/generate_evidence.py from the live workspace.
 
 Proves the app is deployed and used end to end: every screen render and action writes a structured line to the app log (no emails or tokens). It shows the persona the platform resolved, how many forecast rows were visible and unmasked, scenario runs, AI drafts, Lakebase submissions/approvals and Genie answers.
 
@@ -14,16 +14,18 @@ App `nextdaq-rebalance-simulator`: compute ACTIVE, active deployment SUCCEEDED, 
 | Scenario Lab | HEAD_OF_METHODOLOGY | 1015 | 1015 | True | True |
 | Compare & Approve | HEAD_OF_METHODOLOGY | 1015 | 1015 | True | True |
 | Ask Genie | HEAD_OF_METHODOLOGY | 1015 | 1015 | True | True |
+| Scenario Lab | CLIENT_SERVICES | 1015 | 0 | False | False |
+| Ask Genie | CLIENT_SERVICES | 1015 | 0 | False | False |
 
 ## Events in the log
 
 | event | count |
 |---|---|
 | ai_summary | 2 |
-| genie_answer | 2 |
-| page_view | 37 |
+| genie_answer | 3 |
+| page_view | 45 |
 | scenario_decision | 1 |
-| scenario_run | 17 |
+| scenario_run | 21 |
 | scenario_submitted | 1 |
 
 ## Workflow actions (every one)
@@ -36,14 +38,19 @@ App `nextdaq-rebalance-simulator`: compute ACTIVE, active deployment SUCCEEDED, 
 | 2026-11-21T18:25:00+00:00 | scenario_submitted | HEAD_OF_METHODOLOGY | {"scenario_id": "SCN-20261121-fc3713"} |
 | 2026-11-21T18:25:16+00:00 | scenario_decision | HEAD_OF_METHODOLOGY | {"scenario_id": "SCN-20261121-fc3713", "decision": "APPROVED"} |
 | 2026-11-21T18:25:42+00:00 | genie_answer | HEAD_OF_METHODOLOGY | {"question": "How many additions and removals were there in each of the last 3 annual reconstitutions?", "rows": 3, "sql_returned": true} |
+| 2026-11-21T19:21:01+00:00 | genie_answer | CLIENT_SERVICES | {"question": "Which names does the forecast predict will be added or removed at the next reconstitution?", "rows": 1, "sql_returned": true} |
+
+## Scenario compute time
+
+4 timed scenario runs over 1015 securities: min 23 ms, max 29 ms (engine only, after the governed data is loaded).
 
 ## Scenario runs (last 6)
 
-| at | name | shock | additions | removals | turnover % | max weight % | max days to trade |
-|---|---|---|---|---|---|---|---|
-| 2026-11-21T18:24:04+00:00 | My scenario | TXN 30 | 5 | 5 | 1.53 | 11.37 | 763.32 |
-| 2026-11-21T18:24:29+00:00 | My scenario | -  | 5 | 5 | 1.22 | 11.37 | 769.03 |
-| 2026-11-21T18:24:33+00:00 | My scenario | -  | 5 | 5 | 9.26 | 7.23 | 858.76 |
-| 2026-11-21T18:24:35+00:00 | My scenario | -  | 4 | 4 | 9.15 | 7.23 | 859.81 |
-| 2026-11-21T18:24:38+00:00 | My scenario | -  | 3 | 3 | 9.04 | 7.22 | 861.13 |
-| 2026-11-21T18:24:40+00:00 | My scenario | -  | 3 | 3 | 9.04 | 7.22 | 861.13 |
+| at | persona | shock | additions | removals | turnover % | max weight % | max days to trade | compute ms |
+|---|---|---|---|---|---|---|---|---|
+| 2026-11-21T18:24:38+00:00 | HEAD_OF_METHODOLOGY | -  | 3 | 3 | 9.04 | 7.22 | 861.13 | - |
+| 2026-11-21T18:24:40+00:00 | HEAD_OF_METHODOLOGY | -  | 3 | 3 | 9.04 | 7.22 | 861.13 | - |
+| 2026-11-21T19:20:11+00:00 | CLIENT_SERVICES | -  | 5 | 5 | 1.12 | 11.43 | 30.88 | 26 |
+| 2026-11-21T19:20:15+00:00 | CLIENT_SERVICES | -  | 5 | 5 | 8.85 | 9.14 | 36.41 | 23 |
+| 2026-11-21T19:20:19+00:00 | CLIENT_SERVICES | -  | 5 | 5 | 15.88 | 5.78 | 41.41 | 29 |
+| 2026-11-21T19:20:21+00:00 | CLIENT_SERVICES | -  | 5 | 5 | 8.85 | 9.14 | 36.41 | 25 |

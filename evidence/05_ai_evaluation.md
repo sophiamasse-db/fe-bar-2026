@@ -1,6 +1,6 @@
 # 05 — AI evaluation and iteration history
 
-Generated 2026-11-21 19:01 UTC by tools/generate_evidence.py from the live workspace.
+Generated 2026-11-21 19:23 UTC by tools/generate_evidence.py from the live workspace.
 
 Proves the AI was judged against a protocol written before any result (EVAL_PROTOCOL.md, amendments dated and committed before each rerun), with every version's result kept. ML: held-out Dec-2025 reconstitution vs a rank baseline. GenAI: four MLflow Guidelines judges (GPT-5.5) on Claude Sonnet 4.6 output.
 
