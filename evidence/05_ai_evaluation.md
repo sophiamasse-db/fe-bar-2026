@@ -1,6 +1,6 @@
 # 05 — AI evaluation and iteration history
 
-Generated 2026-11-21 17:49 UTC by tools/generate_evidence.py from the live workspace.
+Generated 2026-11-21 19:01 UTC by tools/generate_evidence.py from the live workspace.
 
 Proves the AI was judged against a protocol written before any result (EVAL_PROTOCOL.md, amendments dated and committed before each rerun), with every version's result kept. ML: held-out Dec-2025 reconstitution vs a rank baseline. GenAI: four MLflow Guidelines judges (GPT-5.5) on Claude Sonnet 4.6 output.
 
@@ -59,9 +59,9 @@ Held-out names (v2):
 | v3 | grounded | 8 | 100.0 |
 | v3 | no_invention | 8 | 12.5 |
 | v3.1 | actionable_notice | 8 | 100.0 |
-| v3.1 | compliant_tone | 8 | 87.5 |
-| v3.1 | grounded | 8 | 100.0 |
-| v3.1 | no_invention | 8 | 87.5 |
+| v3.1 | compliant_tone | 8 | 100.0 |
+| v3.1 | grounded | 8 | 87.5 |
+| v3.1 | no_invention | 8 | 75.0 |
 
 Briefs passing every judge:
 
@@ -70,11 +70,12 @@ Briefs passing every judge:
 | v1 | 8 | 0 |
 | v2 | 8 | 0 |
 | v3 | 8 | 1 |
-| v3.1 | 8 | 6 |
+| v3.1 | 8 | 5 |
 
 Final version (v3.1) is below the 90% bar set in the protocol; drafts therefore always go through human approval in the app. Remaining failures (judge reasons):
 
 | scenario_id | judge | judge_reason |
 |---|---|---|
-| S3_STRESS_TOP7_UP_20 | no_invention | The response generally uses the tickers, dates, scenario, index, KPI values, turnover, trading impact, and days-to-trade values that are present in the provided facts, and the sentence “Full details will follow in the official announcement” is explicitly allow |
-| S2_STRESS_LARGEST_UP_30 | compliant_tone | The response is generally neutral and does not provide explicit investment advice, a buy/sell recommendation, or a promise about future investment performance. However, the guideline also requires the output to be factual. The statement that “The hardest-to-tr |
+| S3_STRESS_TOP7_UP_20 | no_invention | The response includes the allowed sentence, “Full details will follow in the official announcement.” However, it also introduces information or characterizations not present in the provided facts. In particular, it says the cap breach is “triggering redistribu |
+| S1_TIGHTER_CAPS | grounded | Most numbers, percentages, tickers, and dates in the response are present in the facts or are acceptable rounded values, such as 45%, 35%, 15%, 2026-12-21, 2026-11-20, five additions/removals, 58.6%, 54.09%, 11.43%, 8.85%, HHI rounded from 452.01 to 452 and 37 |
+| S0_BASELINE | no_invention | The response mostly uses only tickers, dates, index name, metrics, and facts present in the input, and the sentence "Full details will follow in the official announcement" is explicitly allowed. However, the output includes a field labeled "client_notice," whi |

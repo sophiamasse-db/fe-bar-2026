@@ -173,6 +173,14 @@ def main():
         out["counts"] = dict(cur.execute(f"SELECT predicted_action, count(*) FROM {SCHEMA}.security_watch GROUP BY 1").fetchall())
         out["review_status"] = dict(cur.execute(f"SELECT review_status, count(*) FROM {SCHEMA}.security_watch GROUP BY 1").fetchall())
         out["history"] = dict(cur.execute(f"SELECT change_type, count(*) FROM {SCHEMA}.watch_history GROUP BY 1").fetchall())
+        out["scenarios_by_status"] = dict(cur.execute(f"SELECT status, count(*) FROM {SCHEMA}.scenarios GROUP BY 1").fetchall())
+        out["approvals"] = dict(cur.execute(f"SELECT decision, count(*) FROM {SCHEMA}.approvals GROUP BY 1").fetchall())
+        out["audit_actions"] = dict(cur.execute(f"SELECT action, count(*) FROM {SCHEMA}.audit_log GROUP BY 1").fetchall())
+        out["audit_sample"] = [dict(zip(("at", "entity", "entity_id", "action"), r)) for r in cur.execute(
+            f"SELECT at, entity, entity_id, action FROM {SCHEMA}.audit_log ORDER BY at DESC LIMIT 6").fetchall()]
+        out["history_sample"] = [dict(zip(("ticker", "change_type", "field", "old", "new", "at"), r)) for r in cur.execute(
+            f"SELECT ticker, change_type, field, old_value, new_value, changed_at FROM {SCHEMA}.watch_history "
+            f"WHERE change_type <> 'CREATED' ORDER BY changed_at DESC LIMIT 5").fetchall()]
     print(json.dumps(out, default=str))
 
 

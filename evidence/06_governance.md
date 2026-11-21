@@ -1,6 +1,6 @@
 # 06 — Unity Catalog governance
 
-Generated 2026-11-21 17:49 UTC by tools/generate_evidence.py from the live workspace.
+Generated 2026-11-21 19:02 UTC by tools/generate_evidence.py from the live workspace.
 
 Proves access is enforced by the platform per persona from an entitlements table (row filter by sector, MNPI column masks, MNPI row gate), verified as my own user switched through each persona AND as a separate non-admin service principal; plus tags and lineage from system tables.
 

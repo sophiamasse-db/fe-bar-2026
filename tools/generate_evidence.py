@@ -251,9 +251,177 @@ def ev_06():
     write("06_governance.md", txt[:9000])
 
 
+CYCLE_JOB = "nextdaq_rebalance_cycle"
+
+
+def job_id(name):
+    j = cli_json("jobs", "list", "--name", name)
+    return j[0]["job_id"] if j else None
+
+
+def task_outputs(run):
+    """{task_key: (state, seconds, last log line)} for one job run."""
+    out = {}
+    for t in run["tasks"]:
+        st_ = t["state"].get("result_state") or t["state"].get("life_cycle_state")
+        line = ""
+        if st_ == "SUCCESS" and "spark_python_task" in t:
+            o = cli_json("jobs", "get-run-output", str(t["run_id"]))
+            lines = (o.get("logs") or "").strip().splitlines()
+            line = lines[-1] if lines else ""
+        out[t["task_key"]] = (st_, round((t.get("execution_duration") or 0) / 1000), line)
+    return out
+
+
+def sync_outputs(limit=25):
+    """Successful sync_lakebase outputs, newest first."""
+    res = []
+    for r in cli_json("jobs", "list-runs", "--job-id", str(job_id(CYCLE_JOB)), "--limit", str(limit)):
+        run = cli_json("jobs", "get-run", str(r["run_id"]))
+        for t in run["tasks"]:
+            if t["task_key"] == "sync_lakebase" and t["state"].get("result_state") == "SUCCESS":
+                o = cli_json("jobs", "get-run-output", str(t["run_id"]))
+                lines = (o.get("logs") or "").strip().splitlines()
+                if lines:
+                    res.append((run["run_id"], json.loads(lines[-1])))
+    return res
+
+
+def ev_07():
+    outs = sync_outputs()
+    latest = outs[0]
+    edit = next(((rid, o) for rid, o in outs if "edit_test" in o), None)
+    L = latest[1]
+    txt = header("07 — Lakebase operational serving", "Proves the forecast watchlist is served from Lakebase (autoscaling Postgres, "
+                 "project nextdaq-ops, database nextdaq, schema ops): machine-owned columns are refreshed from gold every cycle while "
+                 "human-owned columns survive, every change has a history row, and the app's scenario / approval / audit tables are live. "
+                 "Values come from the sync task's own output (it connects with a short-lived OAuth database credential).")
+    txt += f"## Latest sync (job run {latest[0]})\n\n| measure | value |\n|---|---|\n"
+    for k in ("sync", "counts", "review_status", "history", "scenarios_by_status", "approvals", "audit_actions"):
+        txt += f"| {k} | `{json.dumps(L.get(k, {}), default=str)}` |\n"
+    if edit:
+        e = edit[1]
+        txt += (f"\n## Edit survives refresh (job run {edit[0]})\n\nA person set one record to CONFIRMED with a note, then the "
+                f"refresh ran again.\n\n| check | result |\n|---|---|\n| record | {e['edit_test']['ticker']} |\n"
+                f"| review_status after refresh | {e['edit_test']['review_status_after_refresh']} |\n"
+                f"| analyst note kept | {e['edit_test']['note_kept']} |\n| machine columns refreshed | {e['edit_test']['machine_columns_refreshed']} |\n"
+                f"| refresh after edit | `{json.dumps(e['refresh_after_edit'])}` |\n")
+    if L.get("history_sample"):
+        txt += "\n## History sample (non-creation changes)\n\n| ticker | change | field | old | new | at |\n|---|---|---|---|---|---|\n"
+        txt += "\n".join(f"| {h['ticker']} | {h['change_type']} | {h['field']} | {h['old']} | {h['new']} | {h['at'][:19]} |" for h in L["history_sample"]) + "\n"
+    if L.get("audit_sample"):
+        txt += "\n## Audit log sample (app actions)\n\n| at | entity | id | action |\n|---|---|---|---|\n"
+        txt += "\n".join(f"| {a['at'][:19]} | {a['entity']} | {a['entity_id']} | {a['action']} |" for a in L["audit_sample"]) + "\n"
+    txt += ("\n## Who enforces what\n\n| control | enforced by |\n|---|---|\n"
+            "| Sector row filter, MNPI masks, MNPI row gate on Delta | Platform (Unity Catalog), per signed-in user via the app's user token |\n"
+            "| Who may approve a scenario (entitlements.can_approve) | App, reading the entitlements table as the signed-in user |\n"
+            "| Who sees Lakebase scenario rows and watchlist probabilities | App (the app connects to Postgres as its service principal) |\n"
+            "| App role may not delete history or audit rows | Platform (Postgres grants: SELECT, INSERT, UPDATE only) |\n")
+    write("07_lakebase.md", txt[:9000])
+
+
+def ev_09():
+    runs = cli_json("jobs", "list-runs", "--job-id", str(job_id(CYCLE_JOB)), "--limit", "25")
+    full = [r for r in runs if r["state"].get("result_state") == "SUCCESS"
+            and all(t["state"].get("result_state") == "SUCCESS" for t in cli_json("jobs", "get-run", str(r["run_id"]))["tasks"])]
+    trig = next((r for r in full if r.get("trigger") == "FILE_ARRIVAL"), None)
+    picked = []
+    if trig:
+        picked.append(("file arrival (2 held-back days landed)", trig))
+        rerun = next((r for r in full if r["start_time"] > trig["start_time"]), None)
+    else:
+        trig = full[1] if len(full) > 1 else full[0]
+        picked.append(("final run after the 2 held-back days landed (started manually: the file-arrival trigger is configured "
+                       "but did not fire in this workspace during testing)", trig))
+        rerun = full[0] if len(full) > 1 else None
+    if rerun:
+        picked.append(("rerun immediately after, no new data", rerun))
+    txt = header("09 — Orchestrated cycle", "Proves one Lakeflow Job runs the whole journey in order (pipeline, then forecast and briefs, "
+                 "evaluation, governance, Lakebase sync) after new vendor files land, and that a rerun with no new data is safe. "
+                 "Each task's exit summary is its own printed JSON.")
+    jd = cli_json("jobs", "get", str(job_id(CYCLE_JOB)))["settings"]
+    fa = jd.get("trigger", {}).get("file_arrival", {})
+    txt += (f"Job `{CYCLE_JOB}`: trigger = file arrival on `{fa.get('url', '').split('/Volumes/')[-1]}`, max_concurrent_runs = "
+            f"{jd.get('max_concurrent_runs')}, queueing = {jd.get('queue', {}).get('enabled')}.\n\n")
+    for label, r in picked:
+        run = cli_json("jobs", "get-run", str(r["run_id"]))
+        t = task_outputs(run)
+        txt += (f"## Run {run['run_id']}: {label}\n\ntrigger = {run.get('trigger')}, result = {run['state'].get('result_state')}, "
+                f"started {dt.datetime.fromtimestamp(run['start_time'] / 1000, dt.timezone.utc):%Y-%m-%d %H:%M} UTC\n\n"
+                "| task | state | seconds | exit summary |\n|---|---|---|---|\n")
+        for k in ("refresh_pipeline", "train_and_score", "ai_briefs", "evaluate_ai", "governance", "sync_lakebase"):
+            if k in t:
+                s_, sec, line = t[k]
+                txt += f"| {k} | {s_} | {sec} | {line[:300].replace('|', '/')} |\n"
+        txt += "\n"
+    cross = sql("""SELECT (SELECT max(trade_date) FROM silver_prices) AS latest_price_day,
+       (SELECT max(snapshot_date) FROM gold_universe_monthly) AS latest_snapshot,
+       (SELECT count_if(predicted_action = 'ADD') FROM gold_recon_predictions) AS forecast_adds_gold,
+       (SELECT count_if(predicted_action = 'REMOVE') FROM gold_recon_predictions) AS forecast_removes_gold,
+       (SELECT count(*) FROM recon_market_data) AS manifests, (SELECT count_if(status = 'RECONCILED') FROM recon_market_data) AS reconciled""")
+    lb = sync_outputs(3)[0][1]["counts"]
+    txt += ("## Cross-check after the final run\n\nGold (SQL):\n\n" + cross +
+            f"\nLakebase security_watch (sync output): ADD = {lb.get('ADD')}, REMOVE = {lb.get('REMOVE')}, HOLD = {lb.get('HOLD')}.\n")
+    write("09_orchestration.md", txt[:9000])
+
+
+def ev_10():
+    r = subprocess.run(["databricks", "apps", "logs", "nextdaq-rebalance-simulator", "--tail-lines", "1000", "-p", PROFILE],
+                       capture_output=True, text=True)
+    evs = []
+    for line in r.stdout.splitlines():
+        i = line.find('{"event"')
+        if i >= 0:
+            try:
+                evs.append(json.loads(line[i:]))
+            except json.JSONDecodeError:
+                pass
+    app = cli_json("apps", "get", "nextdaq-rebalance-simulator")
+    txt = header("10 — Databricks App", "Proves the app is deployed and used end to end: every screen render and action writes a "
+                 "structured line to the app log (no emails or tokens). It shows the persona the platform resolved, how many forecast "
+                 "rows were visible and unmasked, scenario runs, AI drafts, Lakebase submissions/approvals and Genie answers.")
+    txt += (f"App `{app['name']}`: compute {app.get('compute_status', {}).get('state')}, active deployment "
+            f"{app.get('active_deployment', {}).get('status', {}).get('state')}, user API scopes "
+            f"{', '.join(app.get('user_api_scopes', []))}; resources: " + ", ".join(x["name"] for x in app.get("resources", [])) + ".\n\n")
+    pv = [e for e in evs if e["event"] == "page_view"]
+    txt += "## Page views by persona (what the platform let each persona see)\n\n| page | persona | forecast rows | unmasked | MNPI cleared | can approve |\n|---|---|---|---|---|---|\n"
+    seen = set()
+    for e in pv:
+        k = (e["page"], e["persona"])
+        if k in seen:
+            continue
+        seen.add(k)
+        txt += f"| {e['page']} | {e['persona']} | {e['forecast_rows']} | {e['forecast_unmasked']} | {e['mnpi_cleared']} | {e['can_approve']} |\n"
+    from collections import Counter
+    cnt = Counter(e["event"] for e in evs)
+    txt += "\n## Events in the log\n\n| event | count |\n|---|---|\n" + "\n".join(f"| {k} | {v} |" for k, v in sorted(cnt.items())) + "\n"
+    txt += "\n## Workflow actions (every one)\n\n| at | event | persona | detail |\n|---|---|---|---|\n"
+    for e in [e for e in evs if e["event"] in ("scenario_submitted", "scenario_decision", "ai_summary", "genie_answer")]:
+        d = {k: v for k, v in e.items() if k not in ("event", "at", "persona")}
+        txt += f"| {e['at']} | {e['event']} | {e['persona']} | {json.dumps(d, default=str)[:220].replace('|', '/')} |\n"
+    txt += "\n## Scenario runs (last 6)\n\n| at | name | shock | additions | removals | turnover % | max weight % | max days to trade |\n|---|---|---|---|---|---|---|---|\n"
+    for e in [e for e in evs if e["event"] == "scenario_run"][-6:]:
+        k = e["kpis"]
+        txt += (f"| {e['at']} | {e['name']} | {e['shock'].get('ticker') or '-'} {e['shock'].get('pct') if e['shock'].get('ticker') else ''} | "
+                f"{k['additions']} | {k['removals']} | {k['turnover_pct']} | {k['max_weight_pct']} | {k['max_days_to_trade']} |\n")
+    write("10_app.md", txt[:9000])
+
+
+def ev_index():
+    files = sorted(f for f in os.listdir(EV) if f.endswith(".md") and f[:2].isdigit())
+    desc = {"00": "answer key: planted findings, real SEC data issues, file inventory", "01": "Lakeflow pipeline run, expectations, rerun test",
+            "02": "quarantine, reconciliation, conforming", "04": "AI output: forecast and verbatim briefs",
+            "05": "AI evaluation: ML vs baseline, judges per version", "06": "Unity Catalog: personas, service principal, policies, lineage",
+            "07": "Lakebase: sync, edit survives refresh, workflow tables", "08": "Genie benchmark: expected vs Genie",
+            "09": "orchestrated job: file-arrival run, rerun, cross-check", "10": "Databricks App: page views by persona, actions"}
+    txt = header("Evidence index", "Every file below was generated from the live workspace by tools/ scripts (nothing typed by hand).")
+    txt += "| file | proves |\n|---|---|\n" + "\n".join(f"| [{f}]({f}) | {desc.get(f[:2], '')} |" for f in files) + "\n"
+    write("README.md", txt)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--only", default="01,02")
+    ap.add_argument("--only", default="01,02,04,05,06,07,09,10,index")
     ap.add_argument("--rerun-test", action="store_true")
     a = ap.parse_args()
     only = set(a.only.split(","))
@@ -261,7 +429,7 @@ def main():
         ev_01(a.rerun_test)
     if "02" in only:
         ev_02()
-    for k, fn in (("04", ev_04), ("05", ev_05), ("06", ev_06)):
+    for k, fn in (("04", ev_04), ("05", ev_05), ("06", ev_06), ("07", ev_07), ("09", ev_09), ("10", ev_10), ("index", ev_index)):
         if k in only:
             fn()
 

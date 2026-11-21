@@ -5,6 +5,12 @@ resources:
       description: "One cycle: ingest (Lakeflow) -> forecast (ML) -> scenario briefs (GenAI) -> evaluate -> govern -> serve (Lakebase)"
       max_concurrent_runs: 1
       queue: {enabled: true}
+      trigger:
+        pause_status: UNPAUSED
+        file_arrival:
+          url: ${var.landing_root}/price_manifests/
+          min_time_between_triggers_seconds: 60
+          wait_after_last_change_seconds: 60
       environments:
         - environment_key: ml
           spec:

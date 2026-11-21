@@ -1,6 +1,6 @@
 # 00 — Answer key and landed data inventory
 
-Generated 2026-11-21 15:55 UTC by tools/evidence_00_answer_key.py from the live workspace.
+Generated 2026-11-21 19:00 UTC by tools/evidence_00_answer_key.py from the live workspace.
 This file proves the raw data exists in the UC volume, what was planted in it, and that the planted counts can be recomputed from the files alone (independently of the generator). Seed 2026; reruns give the same counts.
 
 ## Universe and history
@@ -35,13 +35,13 @@ Prices:
 
 | landed_price_rows | duplicate_rows | null_close | non_positive_close | negative_volume | tickers | first_day | last_day |
 |---|---|---|---|---|---|---|---|
-| 1330994 | 37 | 6 | 6 | 5 | 1016 | 2021-09-01 | 2026-11-18 |
+| 1333026 | 37 | 6 | 6 | 5 | 1016 | 2021-09-01 | 2026-11-20 |
 
 Manifests vs files:
 
 | manifests | counts_match | counts_break | break_detail |
 |---|---|---|---|
-| 75 | 74 | 1 | mkt_prices_20261113.csv: control 1016 vs landed 1013 |
+| 77 | 76 | 1 | mkt_prices_20261113.csv: control 1016 vs landed 1013 |
 
 Index history:
 
@@ -69,7 +69,7 @@ SEC SIC extract (10 planted blanks + filers SEC itself leaves blank):
 | `landing/public/sec_facts/EntityPublicFloat/` | 22 |
 | `landing/public/sec_facts/WeightedAverageNumberOfSharesOutstandingBasic/` | 21 |
 | `landing/prices/` | 63 |
-| `landing/price_manifests/` | 75 |
+| `landing/price_manifests/` | 77 |
 | `landing/index_history/` | 1 |
 | `landing/etf_aum/` | 59 |
 | `landing/holdback/prices/2026-11/` | 2 |

@@ -45,7 +45,8 @@ def q(sql_text: str, params: dict | None = None) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=600, show_spinner="Loading governed gold tables...")
-def load(user: str):
+def load(user: str, persona: str, mnpi: bool, scope: str):
+    """Cached per user AND entitlement, so a change in access never serves data loaded under the old access."""
     u = q(f"""SELECT ticker, company_name, sector, is_financial, market_cap, adv_usd_3m AS adv_usd, in_index, mcap_rank, snapshot_date
               FROM {T('gold_universe_monthly')} WHERE snapshot_date = (SELECT max(snapshot_date) FROM {T('gold_universe_monthly')})""")
     cur = q(f"SELECT ticker, weight FROM {T('gold_index_constituents')}")
@@ -234,8 +235,8 @@ def change_table(trades: pd.DataFrame) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------------------------- page
-u, current, aum, fc, journey = load(USER)
 ent = entitlement()
+u, current, aum, fc, journey = load(USER, str(ent.get("persona")), bool(ent.get("can_see_mnpi")), str(ent.get("sector_scope")))
 mnpi_ok = bool(ent.get("can_see_mnpi"))
 
 with st.sidebar:

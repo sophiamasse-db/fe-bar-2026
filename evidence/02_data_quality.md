@@ -1,6 +1,6 @@
 # 02 — Data quality and completeness
 
-Generated 2026-11-21 15:56 UTC by tools/generate_evidence.py from the live workspace.
+Generated 2026-11-21 19:01 UTC by tools/generate_evidence.py from the live workspace.
 
 Proves bad rows are quarantined with a reason (nothing disappears silently), every vendor file is reconciled against its control totals, and conforming rules work. Compare with the planted counts in 00_answer_key.md.
 
@@ -30,7 +30,7 @@ Sample rows per reason:
 
 | status | files | control_rows | landed_rows | loaded_rows | quarantined_rows |
 |---|---|---|---|---|---|
-| RECONCILED | 74 | 1329981 | 1329981 | 1329927 | 54 |
+| RECONCILED | 76 | 1332013 | 1332013 | 1331959 | 54 |
 | BREAK | 1 | 1016 | 1013 | 1013 | 0 |
 
 Files with a break or quarantined rows:
