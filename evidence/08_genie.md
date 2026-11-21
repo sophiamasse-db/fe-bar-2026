@@ -4,8 +4,6 @@ Generated 2026-11-21 18:13 UTC by tools/generate_evidence.py from the live works
 
 Proves the Genie space `NextDAQ-100 Index Methodology Genie` (id 01f1e5d540d61ef3b6d757b4cb45a66e; definition in src/genie/space.json) answers the approved business questions correctly over the governed gold tables: each question was asked through the Genie Conversation API as the signed-in user and compared with ground-truth SQL from src/genie/benchmarks.py.
 
-Iteration: run 1 (same day) gave 12/14 exact matches; Q05 was labelled by effective date instead of year and Q08 used 12 instead of 13 month-end snapshots. Two definitions were added to the space instructions (tools/genie.py) and every benchmark was rerun.
-
 **Result: 14 of 14 exact matches.**
 
 | id | question | expected (key column) | Genie answer (first columns) | verdict |
