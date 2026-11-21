@@ -21,7 +21,7 @@ from generate_evidence import header, sql_rows, write  # noqa: E402
 
 PROFILE = os.environ.get("DATABRICKS_PROFILE", "fe-bar-2026")
 WAREHOUSE = "0b1ef599493d9600"
-ID_FILE = os.path.join(ROOT, "src", "genie", "space_id.txt")
+SPACE_ID = "01f1e5d540d61ef3b6d757b4cb45a66e"   # also the genie_space_id variable in databricks.yml; "" creates a new space
 TITLE = "NextDAQ-100 Index Methodology Genie"
 
 INSTRUCTIONS = """You answer questions from the NextDAQ index methodology team and the index business about the NextDAQ-100.
@@ -124,14 +124,14 @@ def sort_ids(space: dict) -> dict:
 def upsert_space() -> str:
     body = {"title": TITLE, "description": "Plain-English questions on NextDAQ-100 rank, membership, history, forecast and ETF exposure. Governed gold tables only.",
             "warehouse_id": WAREHOUSE, "serialized_space": json.dumps(sort_ids(build_space()))}
-    if os.path.exists(ID_FILE):
-        sid = open(ID_FILE).read().strip()
+    if SPACE_ID:
+        sid = SPACE_ID
         api("patch", f"/api/2.0/genie/spaces/{sid}", body)
     else:
         me = subprocess.run(["databricks", "current-user", "me", "-p", PROFILE, "-o", "json"], capture_output=True, text=True, check=True)
         body["parent_path"] = f"/Workspace/Users/{json.loads(me.stdout)['userName']}"
         sid = api("post", "/api/2.0/genie/spaces", body)["space_id"]
-        open(ID_FILE, "w").write(sid + "\n")
+        print(f"created space {sid}: set SPACE_ID here and genie_space_id in databricks.yml")
     got = api("get", f"/api/2.0/genie/spaces/{sid}?include_serialized_space=true")
     space = json.loads(got["serialized_space"])
     with open(os.path.join(ROOT, "src", "genie", "space.json"), "w") as f:
