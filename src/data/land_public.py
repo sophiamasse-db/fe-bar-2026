@@ -133,7 +133,7 @@ def main():
     else:
         summary["skipped"] += 1
 
-    summary.update({"listed_symbols": len(listed), "nasdaq_ciks": len(cik_by_ticker),
+    summary.update({"listed_symbols": len(listed), "exchange_ciks": len(cik_by_ticker),
                     "http_calls": calls, "files_written": len(summary["written"])})
     summary["written"] = summary["written"][:5]
     print(json.dumps(summary))

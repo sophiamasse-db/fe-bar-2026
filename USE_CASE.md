@@ -1,16 +1,16 @@
 # USE_CASE — NextDAQ-100 Rebalance Simulator
 
-> Fictional customer: **NextDAQ**, an index provider that publishes and licenses the **NextDAQ-100**. All data is public (exchange symbol directory, SEC EDGAR company facts) or synthetic. Sections marked [YOUR WORDS] are to be rewritten by me; [ASSUMPTION] marks figures agreed in discovery, not measured; [CHECK] marks facts to verify.
+> Fictional customer: **NextDAQ**, an index provider that publishes and licenses the **NextDAQ-100**. All data is public (exchange symbol directory, SEC EDGAR company facts) or synthetic. [ASSUMPTION] marks figures agreed in discovery, not measured; [CHECK] marks facts to verify.
 
 ## 1. One-line outcome
 
-[YOUR WORDS] Cut the time to evaluate one rebalance scenario from **2–3 analyst-days to under 5 minutes**, so the methodology team can test **20+ scenarios per cycle instead of 3–4**, with every scenario versioned, approved and auditable.
+NextDAQ's methodology team will use this app to cut the time to run one rebalance scenario from days to minutes, evaluate more scenarios per rebalance cycle, shorten the time from methodology proposal to approval, and reduce errors and restatements in rebalance calculations.
 
-## 2. The problem in the customer's words
+## 2. The problem
 
-[YOUR WORDS] "Every December, and whenever a megacap pushes us past a concentration cap, we rebuild the index in spreadsheets. One scenario takes two to three days, so we only ever look at three or four options before the committee meets. We can't easily show who changed which rule, and the pre-announcement numbers live in files on a shared drive."
+Each December, the NextDAQ-100 is reconstituted, and quarterly or special rebalances happen when concentration caps are breached. Every rule change or rebalance moves billions of dollars in trading, so methodology teams need to understand the impact before announcing it. Today's pain points: scenario analysis runs in spreadsheets, takes days to iterate on, lacks a robust audit trail, and puts sensitive pre-announcement data at risk.
 
-**Quantified pain:** 4 analysts × ~30% of their year on scenario work, ~2 calculation corrections a year, each costing ~$250k in client remediation and reputation [ASSUMPTION].
+**Quantified pain:** 4 analysts x ~30% of their year on scenario work, ~2 calculation corrections a year, each costing ~$250k in client remediation and reputation [ASSUMPTION].
 
 ## 3. Why now
 

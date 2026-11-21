@@ -1,16 +1,18 @@
 # NextDAQ-100 Rebalance Simulator
 
-**[YOUR WORDS] Index methodology teams can test a rebalance rule change in under 30 milliseconds instead of 2-3 analyst-days, with every scenario governed, approved and auditable.**
+**NextDAQ's methodology team will use this app to cut the time to run one rebalance scenario from days to minutes, evaluate more scenarios per rebalance cycle, shorten the time from methodology proposal to approval, and reduce errors and restatements in rebalance calculations.**
 
 ## Who it is for
 
-[YOUR WORDS] **NextDAQ** (fictional), an index provider in Capital Markets that licenses the NextDAQ-100 to ETF issuers and derivatives markets. Built for the **Head of the Index Business** (licensing revenue, client trust) and the **Head of Index Methodology & Operations** (on-time, error-free rebalances). All data is **public** (exchange symbol directory, SEC EDGAR) or **synthetic** (prices, index history, ETF assets). No customer data.
+This app is for the methodology team. Each December, the NextDAQ-100 is reconstituted, and quarterly or special rebalances happen when concentration caps are breached. Every rule change or rebalance moves billions of dollars in trading, so methodology teams need to understand the impact before announcing it.
+
+NextDAQ and the NextDAQ-100 are fictional. All data is **public** (exchange symbol directory, SEC EDGAR) or **synthetic** (prices, index history, ETF assets). No customer data.
 
 ## The problem and why now
 
-- [YOUR WORDS] Each December reconstitution, and every concentration-cap breach, is rebuilt in spreadsheets: 2-3 analyst-days per scenario, so only 3-4 options reach the committee [ASSUMPTION from discovery].
-- There is no record of who changed which rule; pre-announcement numbers (material non-public information) sit in shared files.
-- **Why now:** a handful of megacaps now drive index weight, so special rebalances are more frequent; competitors launch custom indexes in weeks; benchmark regulation expects a controlled, documented methodology process.
+Today's pain points: scenario analysis runs in spreadsheets, takes days to iterate on, lacks a robust audit trail, and puts sensitive pre-announcement data at risk.
+
+**Why now:** concentration is the big one. A handful of megacaps now carry so much of the index that cap breaches and special rebalances are happening more often, and each one is a client-trust moment with ETF issuers. At the same time, competitors are launching custom and thematic indexes in weeks, and regulators expect benchmark administrators to show a controlled, documented methodology process. Spreadsheets can't keep up with any of those three.
 
 ## What it delivers
 
@@ -36,7 +38,7 @@ What it does **not** claim: the add/remove forecast did not beat a simple rank r
 
 ## How it works
 
-Raw files land in a Unity Catalog volume; a Lakeflow pipeline builds bronze, silver (with quarantine and reconciliation) and gold; Unity Catalog governs it; an MLflow model forecasts adds and removes and `ai_query` drafts summaries; a job upserts the watchlist into Lakebase, where the app also keeps scenarios and approvals; Genie answers questions on the same gold tables; the app brings it together, querying as the signed-in user.
+One connected flow: raw files -> Lakeflow -> Unity Catalog -> ML + GenAI -> Lakebase -> Genie -> app.
 
 | Stage | What it does | Files |
 |---|---|---|
@@ -50,40 +52,40 @@ Raw files land in a Unity Catalog volume; a Lakeflow pipeline builds bronze, sil
 
 ## Decisions and trade-offs
 
-[YOUR WORDS] Full list with alternatives: [DECISIONS.md](DECISIONS.md).
+The full list, with the alternatives I rejected, is in [DECISIONS.md](DECISIONS.md). The ones that matter most:
 
-1. Files in a UC volume with Auto Loader over API calls in the pipeline, so loads replay safely.
-2. Synthetic prices anchored to real SEC public float over random prices, so rankings are believable.
-3. Bad rows dropped to quarantine with a reason over failing the update; breaks are visible, not fatal.
-4. Entitlements as data (a table) over hard-coded users, so access changes are row changes.
-5. A dedicated non-admin service principal for the access test over testing only as myself.
-6. Lakebase upsert that never touches human-owned columns over a read-only synced table.
-7. A trained forecast plus AI summaries over a heuristic score; the AI explains, it never ranks.
-8. The client notice is a template; only the internal summary is AI-written.
-9. A different model family judges the generator; every protocol change dated before the rerun.
-10. Methodology bands 90/110 over 75/125, so the index changes at a realistic rate.
+1. **The ETF-issuer notice is a template.** It goes to clients and moves money, so it has to be exactly right every time. It's built straight from the scenario facts; the AI only writes the internal impact summary, which a person reviews before anything is decided.
+2. **The forecast is a watchlist, not a verdict.** On a reconstitution it had never seen, it didn't beat a simple "rank inside the top 100" rule, so I don't claim it's more accurate. What it adds is an early, explained list of names drifting toward the cutoff. The methodology rule still makes the call.
+3. **Entitlements live in a table.** Access changes all the time; as rows, each change is one visible, auditable update instead of a code change. Unity Catalog policies read that table, so the app, Genie and SQL enforce the same rules.
+4. **Bad data is quarantined, not fatal.** Rows that fail a check go to a quarantine table with a reason, and a broken vendor file shows up as a reconciliation break. One bad price shouldn't stop a daily process, but nothing disappears silently.
+5. **Raw files land in a volume; Auto Loader reads them,** so loads replay safely.
+6. **Synthetic prices are anchored to real SEC public float.** Rankings look like the real market, which a technical stakeholder will check. Real SEC data was messy too (11 filers report float ~1000x too large); fixed openly.
+7. **Lakebase never overwrites what people own.** The refresh updates the model's columns; review status and analyst notes always survive, and every change is in the history.
+8. **A different model family grades the AI.** Claude writes the summaries and GPT judges them, against a protocol I committed before seeing any result.
+9. **I tested access as a separate, non-admin identity,** not just as myself, because my own account can pass while access leaks through a group.
+10. **Methodology bands of 90 / 110.** With wider bands the index barely changed in four years; 90 / 110 gives a realistic five or six changes a year, and both are sliders in the app.
 
 ## How AI was used
 
-[YOUR WORDS] I built this with Claude Code as a pair engineer, following the FE Bar prompt pack: it drafted code and documents; I made every decision at each stop (use case, architecture, quality rules, personas, AI approach, headlines). Practices that kept it honest:
-- A context file every session follows ([FEBAR_CONTEXT.md](FEBAR_CONTEXT.md)); a build log of what failed and what changed ([BUILD_LOG.md](BUILD_LOG.md)).
-- An evaluation protocol committed before any result, with dated amendments and every version's result kept.
-- Evidence generated from the live workspace by scripts, never typed by hand.
-- **One iteration story:** v1 AI briefs passed 0 of 8 judge checks. The judges showed two causes: a judge that contradicted the prompt, and the model adding documents that were not in the facts. Instead of loosening judges, I made the client notice a template and added the missing context to the facts: 0/8 -> 1/8 -> 6/8 and 5/8 in the final run.
-- Realism checks caught real bugs: mid-caps ranked as megacaps (SEC public float tagged ~1000x too large for 11 filers), a reverse split inflating market cap, and a capping edge case.
+I built this with Claude Code as a pair engineer, step by step through the FE Bar prompt pack. Claude drafted the code, SQL and documents; I made the calls at every stop: the use case and personas, the architecture, which data issues to plant, the quality rules, who can see what, the AI approach, and which numbers to stand behind.
+
+What kept it honest:
+- **One rulebook for every session** ([FEBAR_CONTEXT.md](FEBAR_CONTEXT.md)) and a running [BUILD_LOG.md](BUILD_LOG.md) of what failed and what we changed.
+- **The evaluation protocol was committed before any result.** Every change to it is a dated amendment written before the rerun, and every version's result is kept.
+- **Evidence is generated from the live workspace by scripts,** never typed by hand.
+- **Realism checks before trusting output.** That caught mid-caps ranked as megacaps (bad SEC float data), a reverse split inflating a company's size, a capping edge case, and an app cache that could have shown data loaded under someone's old access.
+
+**One iteration story.** The first AI summaries passed 0 of 8 judge checks. The judges' reasons showed two causes: one judge contradicted my own prompt, and the model added documents that weren't in the facts. I didn't loosen the judges. I made the client notice a template and gave the model the context it was missing. That took it from 0/8 to 1/8 to 6/8, and 5/8 in the final run. That's still below my 90% bar, which is exactly why every draft goes through human approval.
 
 ## Repository and how to run it
 
 ```
-databricks auth login --host <workspace> --profile fe-bar-2026
-./tools/deploy.sh                                   # bundle deploy + sync job code to the UC volume
-databricks bundle run nextdaq_setup_data -p fe-bar-2026      # land public data, generate synthetic data
-databricks bundle run nextdaq_rebalance_cycle -p fe-bar-2026 # pipeline -> AI -> governance -> Lakebase
-python3 tools/genie.py                              # create/update the Genie space and run benchmarks
-databricks bundle run nextdaq_app -p fe-bar-2026    # start the app
-./tools/access_test.sh                              # non-admin access test (grant, run as SP, revoke)
-python3 tools/generate_evidence.py && python3 tools/evidence_00_answer_key.py
-./tools/land_holdback.sh                            # demo: land the held-back trading days
+./tools/deploy.sh                                             # bundle deploy + sync job code to the UC volume
+databricks bundle run nextdaq_setup_data -p fe-bar-2026       # land public data, generate synthetic data
+databricks bundle run nextdaq_rebalance_cycle -p fe-bar-2026  # pipeline -> AI -> governance -> Lakebase
+python3 tools/genie.py; ./tools/access_test.sh                # Genie space + benchmarks; non-admin access test
+databricks bundle run nextdaq_app -p fe-bar-2026              # start the app
+python3 tools/generate_evidence.py                            # regenerate evidence/ from the live workspace
 ```
 
-Layout: `src/` (data, pipeline, governance, ai, serve, genie, app), `resources/` (bundle), `tools/`, `evidence/`, `deck/`. Planning: [USE_CASE.md](USE_CASE.md), [BUILD_PLAN.md](BUILD_PLAN.md).
+Planning: [USE_CASE.md](USE_CASE.md), [BUILD_PLAN.md](BUILD_PLAN.md).

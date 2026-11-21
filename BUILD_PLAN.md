@@ -58,7 +58,7 @@ APP       Streamlit (user token): Overview · Scenario Lab · Compare & Approve 
 
 ## 5. Orchestration (one Lakeflow Job, `nextdaq_rebalance_cycle`)
 
-`refresh_pipeline` → `governance` (SQL task) → `train_and_score` → `ai_briefs` → `evaluate_ai` → `sync_lakebase`. Trigger: file arrival on `landing/prices/_manifests/`. `max_concurrent_runs: 1`, queueing on.
+`refresh_pipeline` → `train_and_score` + `ai_briefs` → `evaluate_ai` → `governance` (SQL task, re-applies policies to the tables the AI tasks rewrote) → `sync_lakebase`. Trigger: file arrival on `landing/price_manifests/`. `max_concurrent_runs: 1`, queueing on.
 
 ## 6. Time plan (~8 h)
 
